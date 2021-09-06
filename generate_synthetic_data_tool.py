@@ -30,7 +30,7 @@ def generate_inverse(rand_seed, num_blocks, size_blocks, sparsity_inv_matrix, bl
         for i in range(size):
             for j in range(size):
                 if i==j: #and np.random.rand() < portion:
-                    value = (np.random.randint(2) - 0.5)*2*(low + (upper - low)*np.random.rand(1)[0]) 
+                    # value = (np.random.randint(2) - 0.5)*2*(low + (upper - low)*np.random.rand(1)[0]) 
                     S[i,j] = 1
         return np.matrix(S)
 
