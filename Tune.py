@@ -27,24 +27,7 @@ import os
 
 from TGMRF import TGMRF
 from MD_Cluster import MD_Cluster
-
-
-
-def rand_score(clusters, classes):
-    classes = np.array(classes).astype(int)
-    for i in range(len(clusters)):
-        if clusters[i] == -1:
-            clusters[i] = 100
-    tp_plus_fp = comb(np.bincount(clusters), 2).sum()
-    tp_plus_fn = comb(np.bincount(classes), 2).sum()
-    A = np.c_[(clusters, classes)]
-    tp = sum(comb(np.bincount(A[A[:, 0] == i, 1]), 2).sum()
-             for i in set(clusters))
-    fp = tp_plus_fp - tp
-    fn = tp_plus_fn - tp
-    tn = comb(len(A), 2) - tp - fp - fn
-    return (tp + tn) / (tp + fp + fn + tn)
-
+from measures import rand_score
 
 def Tuning_Hyperparametes(X, Y, dataset_name):
 
