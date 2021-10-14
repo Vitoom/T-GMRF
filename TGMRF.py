@@ -66,16 +66,10 @@ class TGMRF:
         clf = TGMRF_solver(width=self.width, stride=self.stride, 
                   maxIters=self.maxIters, lr=self.lr, lamb=self.lamb, beta=self.beta)
 
-        if self.verbose:
-            for i in tqdm(range(n_samples), ascii=True, desc="TGMRF"):
-                ics, loss, ll_loss, penalty_loss, numberOfParameters = clf.fit(X[i].T)
-                for j in range(s_windows):
-                    self.C[j * cov_matrix_len: (j + 1) * cov_matrix_len, i] = ics[j]
-        else:
-            for i in range(n_samples):
-                ics, loss, ll_loss, penalty_loss, numberOfParameters = clf.fit(X[i].T)
-                for j in range(s_windows):
-                    self.C[j * cov_matrix_len: (j + 1) * cov_matrix_len, i] = ics[j] # ics_full.reshape(-1)
+        for i in tqdm(range(n_samples), ascii=True, desc="TGMRF"):
+            ics, loss, ll_loss, penalty_loss, numberOfParameters = clf.fit(X[i].T)
+            for j in range(s_windows):
+                self.C[j * cov_matrix_len: (j + 1) * cov_matrix_len, i] = ics[j]
         
         # normalizing C
         """
