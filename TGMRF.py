@@ -223,10 +223,4 @@ class TGMRF:
         # dump the projecting matrix
         self.project_matrix = u[:, :k]
         
-        # Compute similarity distance matrix
-        distance = np.zeros((n_samples, n_samples))
-        for i in range(n_samples):
-            for j in range(i+1, n_samples):
-                distance[i][j] = distance[j][i] = sum(abs(C_trans[i, :] - C_trans[j, :])) # distance_computer(C_trans[i, :], C_trans[j, :])
-        
-        return distance, C_trans, duration, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters
+        return C_trans, duration, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters

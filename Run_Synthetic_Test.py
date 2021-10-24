@@ -10,10 +10,10 @@ import pickle as pkl
 import numpy as np
 from sklearn.cluster import DBSCAN, KMeans
 
-from generate_synthetic_data_tool import Fake_Dataset
+from Tools.generate_synthetic_data_tool import Fake_Dataset
 from TGMRF import TGMRF
 from MD_Cluster import MD_Cluster
-from measures import rand_score
+from Measures.measures import rand_score
 
 dataset_name = "Fake_192_300_4" # "Fake_30_30_4"
 
@@ -25,7 +25,7 @@ dump_file = "./dump/" + dataset_name + "/TGMRF.pkl"
 if not os.path.exists(dump_file):
     clf = TGMRF(epsilon=50, width=10, stride=10, maxIters=80, lamb=5e-3, beta=5e-3) # maxIters=80
     distance, C_trans, duration, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters = clf.fit_transform(X)
-
+    
     output = open(dump_file, 'wb')
     pkl.dump((distance, C_trans), output)
 else:

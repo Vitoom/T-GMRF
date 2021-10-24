@@ -27,7 +27,7 @@ import os
 
 from TGMRF import TGMRF
 from MD_Cluster import MD_Cluster
-from measures import rand_score
+from Measures.measures import rand_score
 
 def Tuning_Hyperparametes(X, Y, dataset_name):
 
