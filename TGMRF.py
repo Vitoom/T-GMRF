@@ -42,67 +42,6 @@ class TGMRF:
         A = (A + A.T) - np.diag(temp)
         return A
     
-    def fit(self, X):
-        """
-        Fix the model and construct the project matrix
-        
-        Parameters
-        ----------
-        X : {array-like, sparse matrix}, shape = [n_samples, l_features, m_lengths]
-            New data to transform.
-            
-        Returns
-        -------
-        None
-        """
-        # Compute Time-varying Gaussian Markov Random Fields for every MTS (multivariaten time series) 
-        n_samples = X.shape[0]
-        m_lengths = X.shape[2]
-        l_features = X.shape[1]
-        s_windows = int((m_lengths - self.width) / self.stride + 1)
-        self.C = np.zeros((int(l_features * (l_features + 1)  * s_windows / 2),  n_samples))
-        cov_matrix_len = int(l_features * (l_features + 1) / 2)
-
-        clf = TGMRF_solver(width=self.width, stride=self.stride, 
-                  maxIters=self.maxIters, lr=self.lr, lamb=self.lamb, beta=self.beta)
-
-        for i in tqdm(range(n_samples), ascii=True, desc="TGMRF"):
-            ics, loss, ll_loss, penalty_loss, numberOfParameters = clf.fit(X[i].T)
-            for j in range(s_windows):
-                self.C[j * cov_matrix_len: (j + 1) * cov_matrix_len, i] = ics[j]
-        
-        # normalizing C
-        """
-        # worsen performance for z-normalize
-        # the l2-norm normalization is applied
-        quantile_transformer = preprocessing.QuantileTransformer(
-                output_distribution='normal', random_state=0)
-        C = quantile_transformer.fit_transform(C)
-        """
-
-        C_normalize = preprocessing.normalize(self.C, norm='l2')
-        # keep original feature
-        # C_normalize = self.C
-        
-        # Covariance of C
-        Sigma_c = np.cov(C_normalize)
-        
-        # Run SVD algorithm onto covariance matrix of C
-        u, s, vh = np.linalg.svd(Sigma_c, full_matrices=True)
-        
-        # According to the energy content threshold, select the first k
-        totally_variance = sum(s)
-        k = len(s)
-        for i in range(len(s), 0, -1):
-            if sum(s[:i])/totally_variance*100 < self.epsilon:
-                k = i + 1
-                break
-        
-        # Reconstruction of Sigma_c
-        C_trans = np.dot(C_normalize.T, u[:, :k])
-
-        self.project_matrix = u[:, :k]
-    
     def predict(self, X):
         """
         Fix the model and construct the project matrix
@@ -147,7 +86,6 @@ class TGMRF:
         C_trans = np.dot(C_normalize.T, self.project_matrix)
 
         return C_trans
-        
     
     def fit_transform(self, X):
         """
@@ -224,3 +162,27 @@ class TGMRF:
         self.project_matrix = u[:, :k]
         
         return C_trans, duration, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters
+
+    def fit(self, X_train, X_test):
+        """
+        Fix the model and construct the project matrix
+        
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = [n_samples, l_features, m_lengths]
+            New data to transform.
+            
+        Returns
+        -------
+        None
+        """
+
+        X = np.concatenate((X_train, X_test), axis=0)
+
+        C_trans, duration, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters = self.fit_transform(X)
+        
+        C_trans_train = C_trans[:X_train.shape[0]]
+
+        C_trans_test = C_trans[-X_test.shape[0]:]
+
+        return C_trans, C_trans_train, C_trans_test

@@ -16,6 +16,24 @@ from sklearn.cluster import DBSCAN
 from sklearn.metrics import pairwise_distances
 import matplotlib.pyplot as plt
 
+import numpy as np
+import scipy as sp
+
+def dbscan_predict(dbscan_model, X_new, metric=sp.spatial.distance.cosine):
+    # Result is noise by default
+    y_new = np.ones(shape=len(X_new), dtype=int)*-1 
+
+    # Iterate all input samples for a label
+    for j, x_new in enumerate(X_new):
+        # Find a core sample closer than EPS
+        for i, x_core in enumerate(dbscan_model.components_): 
+            if sum(abs(x_new - x_core)) < dbscan_model.eps:
+                # Assign label of x_core to x_new
+                y_new[j] = dbscan_model.labels_[dbscan_model.core_sample_indices_[i]]
+                break
+
+    return y_new
+
 class MD_Cluster:
     """
     The implementation is multi-density based clustering algorithm.
@@ -27,16 +45,18 @@ class MD_Cluster:
         self.diff_threshold = diff_threshold
         self.slope_threshold = slope_threshold
         self.k = 10
-        self.select_portion = 0.3
+        self.select_portion = 0.25
         self.cluster_bag = []
         self.radiuses = None
+        self.C_trans_dump = None
+        self.cluster_result_dump = None
 
     def Infection_Point(self, dis_list, i, j):
         stack = []
-        radiuses = []
+        radiuses_index = []
         history = []
         stack.append((i, j))
-        dis_list = sorted(dis_list)
+        
         while(len(stack) != 0):
             left, right = stack.pop()
             #print(left, right)
@@ -56,15 +76,14 @@ class MD_Cluster:
                     _right = right_slope
                     r = k
                 history.append((r, _left, _right, diff))
-                print(r, "\t", left_slope, "\t", right_slope, "\t", diff)
+                #print(r, "\t", left_slope, "\t", right_slope, "\t", diff)
             if abs(diff) < self.diff_threshold and abs(left_slope) < self.slope_threshold and abs(right_slope) < self.slope_threshold:
-                radiuses.append(dis_list[r])
+                radiuses_index.append(r)
             stack.append((left, r-1))
             stack.append((r+1, right))
 
-        radiuses = sorted(radiuses)
-        print(radiuses)
-        return radiuses
+        radiuses_index = sorted(radiuses_index)
+        return radiuses_index
 
     def get_radiuses(self, distance):
         k_dis = []
@@ -72,39 +91,40 @@ class MD_Cluster:
             _dis = distance[i,:].copy()
             _dis.sort()
             k_dis.append(_dis[self.k])
-        
-        radiuses = self.Infection_Point(k_dis, 0, len(k_dis) - 1)
+        k_dis = sorted(k_dis)
+        radiuses_index = self.Infection_Point(k_dis, 0, len(k_dis) - 1)
 
+        # densing adjacent radiuses
         error_list = []
-        for i in range(1, len(radiuses)):
-            error = radiuses[i] - radiuses[i-1]
+        for i in range(1, len(radiuses_index)):
+            error = radiuses_index[i] - radiuses_index[i-1]
             error_list.append(error)
-        _eps = (max(radiuses) - min(radiuses)) * self.select_portion
+        _eps = (max(radiuses_index) - min(radiuses_index)) * self.select_portion
         
-        true_radiuses = []
-        start = radiuses[0]
-        true_radiuses.append(start)
+        true_radiuses_index = []
+        start = radiuses_index[0]
+        true_radiuses_index.append(start)
         for i in range(len(error_list)):
             if error_list[i] > _eps:
-                true_radiuses.append(int((start + radiuses[i])/2))
-                start = radiuses[i+1]
+                true_radiuses_index.append(int((start + radiuses_index[i])/2))
+                start = radiuses_index[i+1]
         
-        true_radiuses.append(int((start + radiuses[-1])/2))
+        true_radiuses_index.append(int((start + radiuses_index[-1])/2))
 
-        true_radiuses = list(set(true_radiuses))
+        true_radiuses_index = true_radiuses_index[1:]
 
-        plot_radiuses_value = [k_dis[i] for i in true_radiuses]
-        plot_radiuses = [len(k_dis) - i for i in true_radiuses]
+        radiuses_value = [k_dis[i] for i in true_radiuses_index]
+        plot_radiuses_index = [len(k_dis) - i for i in true_radiuses_index]
 
         plt.plot(k_dis[:len(k_dis)][::-1], linewidth=6)
-        plt.plot(plot_radiuses, plot_radiuses_value, 'r^', markersize=12)
+        plt.plot(plot_radiuses_index, radiuses_value, 'r^', markersize=12)
 
-        eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 9)
+        eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 9) # 9 for BasicMotions
         plt.axhline(y=eps, color='y', linestyle='-')
         fig = plt.gcf()
         fig.savefig('MDDBSCAN_density.pdf', format='pdf', bbox_inches='tight')
     
-        return true_radiuses
+        return radiuses_value
 
     def fit_predict(self, C_trans):
 
@@ -135,7 +155,7 @@ class MD_Cluster:
             remain = db_clustering == -1
             select_index_filter_noise = select_index[select]
 
-            clustering_assign[select_index_filter_noise] = db_clustering[select]
+            clustering_assign[select_index_filter_noise] = db_clustering[select] + stride
 
             select_index = select_index[remain]
             C_trans_iter = C_trans_iter[remain]
@@ -143,41 +163,25 @@ class MD_Cluster:
             stride += 100
 
         clustering_result = pd.Series(clustering_assign).astype('category').cat.codes
+
+        self.C_trans_dump = C_trans
+        self.cluster_result_dump = clustering_result
 
         return clustering_result
 
     def fit(self, C_trans):
 
-        self.fit_predict()
+        self.fit_predict(C_trans)
 
     def predict(self, C_trans):
-        n_samples = C_trans.shape[0]
+        
+        dist = pairwise_distances(C_trans, self.C_trans_dump, metric="l1")
 
-        C_trans_iter = C_trans.copy()
+        index = dist.argmin(axis=1)
+        
+        clustering_result = [self.cluster_result_dump[i] for i in index]
 
-        stride = 0
-        select_index = np.array(list(range(C_trans.shape[0])))
-
-        clustering_assign = np.full(C_trans.shape[0], -1)
-
-        for dbscan in self.cluster_bag:
-            db_clustering = dbscan.predict(C_trans_iter)
-            self.cluster_bag.append(dbscan)
-
-            select = db_clustering != -1
-            remain = db_clustering == -1
-            select_index_filter_noise = select_index[select]
-
-            clustering_assign[select_index_filter_noise] = db_clustering[select]
-
-            select_index = select_index[remain]
-            C_trans_iter = C_trans_iter[remain]
-
-            stride += 100
-
-        clustering_result = pd.Series(clustering_assign).astype('category').cat.codes
-
-        return clustering_result
+        return list(clustering_result)
 
 
 

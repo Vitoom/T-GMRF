@@ -1,0 +1,9 @@
+nohup: ignoring input
+Current Directory: 	 /home/wading/Git/T-GMRF
+Processing BasicMotions
+Rand Score (Multi-density):	0.9141025641025641
+NMI (Multi-density):	0.8285783118033172
+Rand Score (Pure DBSCAN):	0.8807692307692307
+NMI (Pure DBSCAN):	0.7797921224906507
+Rand Score (KShape):	0.8166666666666667
+NMI (KShape):	0.600817211326205

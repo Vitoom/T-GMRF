@@ -14,6 +14,7 @@ import os
 from sklearn.model_selection import train_test_split
 
 def read_from_arff(path):
+    
     f = open(path, 'r', encoding='utf-8')
     data = arff.loadarff(f)
     df = pd.DataFrame(data[0])
@@ -35,7 +36,9 @@ def read_from_arff(path):
 
 def ArffDataset_Generate(dataset_name):
 
-    root_path = '../Dataset'
+    print("Current Directory: \t", os.getcwd()) 
+
+    root_path = './Datasets'
         
     select_dataset = dataset_name
     
