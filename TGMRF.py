@@ -18,7 +18,7 @@ class TGMRF:
     Parameters
     ----------
     """
-    def __init__(self, epsilon=50, width=10, stride=1, maxIters=150, lr=0, lamb=1e-2, beta=1e-2, measure="euclidean", verbose=True):
+    def __init__(self, epsilon=50, width=10, stride=1, maxIters=30, lr=0, lamb=1e-2, beta=1e-2, measure="euclidean", verbose=True):
         self.epsilon = epsilon
         self.width = width
         self.stride = stride
