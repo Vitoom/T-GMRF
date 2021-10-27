@@ -33,7 +33,7 @@ else:
     distance, C_trans = pkl.load(output)
 output.close()
 
-clustering = MD_Cluster(diff_threshold=0.0015, slope_threshold=0.015)
+clustering = MD_Cluster(diff_threshold=0.003, slope_threshold=0.015)
 clustering_result_md = clustering.fit_predict(distance)
 
 _eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 10)

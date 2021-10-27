@@ -12,7 +12,7 @@ from sklearn import preprocessing
 from Solver.TGMRF_solver import TGMRF_solver
 from time import time
 
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import DBSCAN, KMeans
 from sklearn.metrics import pairwise_distances
 import matplotlib.pyplot as plt
 

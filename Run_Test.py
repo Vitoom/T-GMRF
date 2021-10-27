@@ -8,6 +8,7 @@ Created on Wed Jan  1 22:14:30 2020
 import os
 import pickle as pkl
 import numpy as np
+from sklearn import metrics
 from sklearn.cluster import DBSCAN, KMeans
 from tslearn.clustering import KShape
 
@@ -40,7 +41,7 @@ else:
 output.close()
 
 # Train multi-density clustering algorithm
-clustering = MD_Cluster(diff_threshold=0.003, slope_threshold=0.07)
+clustering = MD_Cluster(diff_threshold=0.003, slope_threshold=0.01)
 _clustering = clustering.fit_predict(C_trans)
 
 clustering_predict = clustering.predict(C_trans_test)
@@ -48,8 +49,8 @@ clustering_predict = clustering.predict(C_trans_test)
 ri_md = rand_score(clustering_predict, Y_test)
 nmi_md = normalized_mutual_info_score(clustering_predict, Y_test)
 
-print("Rand Score (Multi-density):\t{}".format(ri_md))
-print("NMI (Multi-density):\t{}".format(nmi_md))
+print("Rand Score (TGMRF + Multi-density):\t{}".format(ri_md))
+print("NMI (TGMRF + Multi-density):\t{}\n".format(nmi_md))
 
 # Pure DBSCAN
 distance = pairwise_distances(C_trans, metric="l1")
@@ -61,8 +62,20 @@ clustering_db = clustering.fit_predict(C_trans)
 ri_db = rand_score(clustering_db[-40:], Y_test)
 nmi_db = normalized_mutual_info_score(clustering_db[-40:], Y_test)
 
-print("Rand Score (Pure DBSCAN):\t{}".format(ri_db))
-print("NMI (Pure DBSCAN):\t{}".format(nmi_db))
+print("Rand Score (TGMRF + Pure DBSCAN):\t{}".format(ri_db))
+print("NMI (TGMRF + Pure DBSCAN):\t{}\n".format(nmi_db))
+
+# K-means
+
+kmeans = KMeans(n_clusters=4, random_state=0)
+kmeans.fit(C_trans)
+clustering_kmeans =  kmeans.predict(C_trans_test)
+
+ri_kmeans = rand_score(clustering_kmeans, Y_test)
+nmi_kmeans = normalized_mutual_info_score(clustering_kmeans, Y_test)
+
+print("Rand Score (TGMRF + KMeans):\t{}".format(ri_kmeans))
+print("NMI (TGMRF + KMeans):\t{}\n".format(nmi_kmeans))
 
 # K-Shape
 X = np.concatenate((X_train, X_test), axis=0)
@@ -80,10 +93,15 @@ print("Rand Score (KShape):\t{}".format(ri_ks))
 print("NMI (KShape):\t{}".format(nmi_ks))
 
 """
-Rand Score (Multi-density):     0.9141025641025641
-NMI (Multi-density):    0.8285783118033172
-Rand Score (Pure DBSCAN):       0.8807692307692307
-NMI (Pure DBSCAN):      0.7797921224906507
+Rand Score (TGMRF + Multi-density):     0.9141025641025641
+NMI (TGMRF + Multi-density):    0.8426223435220391
+
+Rand Score (TGMRF + Pure DBSCAN):       0.8807692307692307
+NMI (TGMRF + Pure DBSCAN):      0.7797921224906507
+
+Rand Score (TGMRF + KMeans):    0.8602564102564103
+NMI (TGMRF + KMeans):   0.8293595724997522
+
 Rand Score (KShape):    0.8166666666666667
 NMI (KShape):   0.600817211326205
 """
