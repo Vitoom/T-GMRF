@@ -67,7 +67,7 @@ def Tuning_Hyperparametes(X, Y, dataset_name):
         nmi_md = normalized_mutual_info_score(clustering_result_md, Y, average_method="max")
 
         shrink = 1.0
-        bic = math.log(X.shape[0]) * numberOfParameters * shrink - 2 * aggregated_ll_Loss - 2 * aggregated_penalty_loss
+        bic = math.log(X.shape[0]) * numberOfParameters * shrink - 2 * math.log(aggregated_ll_Loss + aggregated_penalty_loss)
 
         if len(clustering_hdbscan) == 1:
             clustering_hdbscan[0] = 20
