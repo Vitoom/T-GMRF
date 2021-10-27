@@ -22,6 +22,8 @@ from tslearn.preprocessing import TimeSeriesScalerMeanVariance
 
 from sklearn.metrics import pairwise_distances
 
+os.chdir("/home/wading/Git/T-GMRF")
+
 X_train, Y_train, X_test, Y_test = ArffDataset_Generate("BasicMotions")
 
 dump_file = "./dump/C_trans_dump.pkl"
@@ -42,7 +44,7 @@ output.close()
 
 # Train multi-density clustering algorithm
 clustering = MD_Cluster(diff_threshold=0.003, slope_threshold=0.01)
-_clustering = clustering.fit_predict(C_trans)
+clustering.fit(C_trans)
 
 clustering_predict = clustering.predict(C_trans_test)
 
@@ -83,7 +85,7 @@ _X = X.transpose(0, 2, 1)
 _X = TimeSeriesScalerMeanVariance(mu=0., std=1.).fit_transform(_X)
 ks = KShape(n_clusters=4, n_init=6, random_state=0)
 
-clustering_result = ks.fit(_X)
+ks.fit(_X)
 clustering_ks = ks.predict(_X[-40:])
 
 ri_ks = rand_score(clustering_ks, Y_test)

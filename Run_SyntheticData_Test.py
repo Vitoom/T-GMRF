@@ -14,6 +14,7 @@ from Tools.generate_synthetic_data_tool import Fake_Dataset
 from TGMRF import TGMRF
 from MD_Cluster import MD_Cluster
 from Measures.measures import rand_score
+from sklearn.metrics import pairwise_distances
 
 dataset_name = "Fake_192_300_4" # "Fake_30_30_4"
 
@@ -24,14 +25,17 @@ X = X.transpose((0, 2, 1))
 dump_file = "./dump/" + dataset_name + "/TGMRF.pkl"
 if not os.path.exists(dump_file):
     clf = TGMRF(epsilon=50, width=10, stride=10, maxIters=80, lamb=5e-3, beta=5e-3) # maxIters=80
-    distance, C_trans, duration, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters = clf.fit_transform(X)
+    C_trans, duration, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters = clf.fit_transform(X)
     
     output = open(dump_file, 'wb')
-    pkl.dump((distance, C_trans), output)
+    pkl.dump(C_trans, output)
 else:
     output = open(dump_file, 'rb')
-    distance, C_trans = pkl.load(output)
+    C_trans = pkl.load(output)
 output.close()
+
+# Compute similarity distance matrix
+distance = pairwise_distances(C_trans, metric="l1")
 
 clustering = MD_Cluster(diff_threshold=0.003, slope_threshold=0.015)
 clustering_result_md = clustering.fit_predict(distance)
