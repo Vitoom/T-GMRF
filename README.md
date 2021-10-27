@@ -40,5 +40,5 @@ python Run_Test.py
 
 + [**Tune.py**](https://github.com/Vitoom/T-GMRF/blob/main/Tune.py): Tune hyperparameters based on minmizing BIC or maximizing silhouette score.
 + [**generate_synthetic_data_tool.py**](https://github.com/Vitoom/T-GMRF/blob/main/Tools/generate_synthetic_data_tool.py): Generate MTS dataset with various lengths, dimensions and number of instance.
-+ [**Run_SyntheticData_Test.py**](https://github.com/Vitoom/T-GMRF/blob/main/Run_SyntheticData_Test.py): Run T-GMRF test on sunthetic dataset.
++ [**Run_SyntheticData_Test.py**](https://github.com/Vitoom/T-GMRF/blob/main/Run_SyntheticData_Test.py): Run T-GMRF test on synthetic dataset.
 + [**csm.py**](https://github.com/Vitoom/T-GMRF/blob/main/Measures/csm/csm.py): Compute CSM clustering measure depending on the R package, [TSclust](https://cran.r-project.org/web/packages/TSclust/index.html).
