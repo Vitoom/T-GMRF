@@ -17,9 +17,7 @@ T-GMRF is a novel clustering approach for Multivariate Time Series Clustering (M
 
 1. Install depedency pakcages.
 ```bash
-conda install sklearn, snap, tslearn, tqdm, hdbscan, pyreadr
-
-pip install 'ray[tune]'
+pip install sklearn, snap, tslearn, tqdm, hdbscan, pyreadr, 'ray[tune]'
 ```
 
 2. Clone the code to local.
