@@ -48,6 +48,6 @@ Partially open source code of the compared baselines.
 ## Misc
 
 + [**Tune.py**](https://github.com/Vitoom/T-GMRF/blob/main/Tune.py): Tune hyperparameters based on minmizing BIC or maximizing silhouette score.
-+ [**generate_synthetic_data_tool.py**](https://github.com/Vitoom/T-GMRF/blob/main/Tools/generate_synthetic_data_tool.py): Generate MTS dataset with various lengths, dimensions and number of instance.
-+ [**Run_SyntheticData_Test.py**](https://github.com/Vitoom/T-GMRF/blob/main/Run_SyntheticData_Test.py): Run T-GMRF test on synthetic dataset.
++ [**generate_synthetic_data_tool.py**](https://github.com/Vitoom/T-GMRF/blob/main/Tools/generate_synthetic_data_tool.py): Generate MTS dataset with various lengths, dimensions and number of instance using prescribed GRMF series.
++ [**Run_SyntheticData_Test.py**](https://github.com/Vitoom/T-GMRF/blob/main/Run_SyntheticData_Test.py): Run T-GMRF test on synthetic datasets.
 + [**csm.py**](https://github.com/Vitoom/T-GMRF/blob/main/Measures/csm/csm.py): Compute CSM clustering measure depending on the R package, [TSclust](https://cran.r-project.org/web/packages/TSclust/index.html).
