@@ -106,7 +106,7 @@ class MD_Cluster:
         true_radiuses_index.append(start)
         for i in range(len(error_list)):
             if error_list[i] > _eps:
-                true_radiuses_index.append(int((start + radiuses_index[i])/2))
+                true_radiuses_index.append(int(start + (radiuses_index[i] - start) * 0.8))
                 start = radiuses_index[i+1]
         
         true_radiuses_index.append(int((start + radiuses_index[-1])/2))
@@ -181,7 +181,7 @@ class MD_Cluster:
         
         clustering_result = [self.cluster_result_dump[i] for i in index]
 
-        return list(clustering_result)
+        return np.array(clustering_result)
 
 
 
