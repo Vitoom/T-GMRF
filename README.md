@@ -47,6 +47,7 @@ Partially open source codes of the compared baselines.
 
 ## Misc
 
++ [**RI.py**](https://github.com/Vitoom/T-GMRF/blob/main/Measures/RI.py): A metric measuring the agreement between two partitions and shows how much the clustering results are close to the ground truth.
 + [**CSM.py**](https://github.com/Vitoom/T-GMRF/blob/main/Measures/CSM.py): A metric measuring cluster similarity between the true cluster label and the clustering result.
 + [**Tune.py**](https://github.com/Vitoom/T-GMRF/blob/main/Tune.py): Tune hyperparameters based on minmizing BIC or maximizing silhouette score.
 + [**generate_synthetic_data_tool.py**](https://github.com/Vitoom/T-GMRF/blob/main/Tools/generate_synthetic_data_tool.py): Generate MTS dataset with various lengths, dimensions and number of instance using prescribed GRMF series.
