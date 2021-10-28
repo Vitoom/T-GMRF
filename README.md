@@ -47,7 +47,7 @@ Partially open source codes of the compared baselines.
 
 ## Misc
 
-+ [**CSM.py**](https://github.com/Vitoom/T-GMRF/blob/main/Measures/CSM.py): Cluster similarity measure, a metric measuring the similarity between the true cluster label and the one obtained with a clustering method
++ [**CSM.py**](https://github.com/Vitoom/T-GMRF/blob/main/Measures/CSM.py): A metric measuring cluster similarity between the true cluster label and the clustering result.
 + [**Tune.py**](https://github.com/Vitoom/T-GMRF/blob/main/Tune.py): Tune hyperparameters based on minmizing BIC or maximizing silhouette score.
 + [**generate_synthetic_data_tool.py**](https://github.com/Vitoom/T-GMRF/blob/main/Tools/generate_synthetic_data_tool.py): Generate MTS dataset with various lengths, dimensions and number of instance using prescribed GRMF series.
 + [**Run_SyntheticData_Test.py**](https://github.com/Vitoom/T-GMRF/blob/main/Run_SyntheticData_Test.py): Run T-GMRF test on synthetic datasets.
