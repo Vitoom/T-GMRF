@@ -6,7 +6,7 @@ This repo open the python source code for "Time-varying Gaussian Markov Random F
 
 T-GMRF is a novel clustering approach for Multivariate Time Series Clustering (MTS) data with particular interest in capturing its timevarying correlation patterns. The major classes include:
 
-+ [**TGMRF.py**](https://github.com/Vitoom/T-GMRF/blob/main/TGMRF.py): T-GMRF learning class to extract GMRF series. It depends on Random Block Descent and ADMM solver [here](https://github.com/Vitoom/T-GMRF/tree/main/Solver).
++ [**TGMRF.py**](https://github.com/Vitoom/T-GMRF/blob/main/TGMRF.py): T-GMRF learning class to extract GMRF series. It depends on Random Block Descent and ADMM solvers [here](https://github.com/Vitoom/T-GMRF/tree/main/Solver).
 + [**MD_Cluster.py**](https://github.com/Vitoom/T-GMRF/blob/main/MD_Cluster.py): Multi-density based clustering class using fast density estimation procedure.
 
 It has several hyperparameters as follows:
