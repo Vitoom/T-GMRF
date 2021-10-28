@@ -30,7 +30,7 @@ pip install sklearn, snap, tslearn, tqdm, hdbscan, pyreadr, 'ray[tune]'
 git clone https://github.com/Vitoom/T-GMRF.git
 ```
 
-3. Run quick test of T-GMRF on small dataset, BasicMotions, opened from [UEA Repo](http://www.timeseriesclassification.com/dataset.php).
+3. Run quick test of T-GMRF on a small dataset, BasicMotions, opened from [UEA Repo](http://www.timeseriesclassification.com/dataset.php).
 ```bash
 cd T-GMRF/
 python Run_Test.py
