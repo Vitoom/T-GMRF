@@ -27,6 +27,7 @@ git clone https://github.com/Vitoom/T-GMRF.git
 
 3. Run T-GMRF on BasicMotions dataset from [UEA Repo](http://www.timeseriesclassification.com/dataset.php).
 ```bash
+cd T-GMRF/
 python Run_Test.py
 ```
 
