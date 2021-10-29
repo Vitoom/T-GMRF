@@ -102,7 +102,7 @@ csm_ks = cluster_similarity_measure(clustering_ks, Y_test, "BasicMotions")
 
 print("Rand Score (KShape):\t{}".format(ri_ks))
 print("NMI (KShape):\t{}".format(nmi_ks))
-print("CSM (KShape):\t{}\n".format(csm_ks))
+print("CSM (KShape):\t{}".format(csm_ks))
 
 """
 Processing BasicMotions
