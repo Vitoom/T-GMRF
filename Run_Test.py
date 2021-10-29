@@ -102,7 +102,7 @@ csm_ks = cluster_similarity_measure(clustering_ks, Y_test, "BasicMotions")
 
 print("Rand Score (KShape):\t{}".format(ri_ks))
 print("NMI (KShape):\t{}".format(nmi_ks))
-print("CSM (TGMRF + KShape):\t{}\n".format(csm_ks))
+print("CSM (KShape):\t{}\n".format(csm_ks))
 
 """
 Processing BasicMotions
@@ -120,7 +120,7 @@ CSM (TGMRF + KMeans):   0.625
 
 Rand Score (KShape):    0.808974358974359
 NMI (KShape):   0.6322388985188019
-CSM (TGMRF + KShape):   0.6346256684491979
+CSM (KShape):   0.6346256684491979
 """
 
 
