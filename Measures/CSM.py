@@ -59,10 +59,6 @@ def Compute_score(y_true, y_pred):
     
     col_max_index = np.argmax(w, axis=1)
     
-    max_hits = [w[i][col_max_index[i]] for i in range(len(col_max_index))]
-    
-    bound = min(nlargest(len(set(y_true)) + 1, max_hits))
-    
     csm = 0
     
     for i in range(w.shape[0]):
