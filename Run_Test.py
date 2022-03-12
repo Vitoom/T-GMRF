@@ -32,7 +32,7 @@ dump_file = "./dump/C_trans_dump.pkl"
 if not os.path.exists(dump_file):
 
     # Combining train and test data to extract T-GMRF features
-    clf = TGMRF(width=50, stride=25, lamb=1e-2, beta=1e-2)
+    clf = TGMRF(width=50, stride=25, lamb=6e-3, beta=5e-3)
     C_trans, C_trans_train, C_trans_test = clf.fit(X_train, X_test)
 
     output = open(dump_file, 'wb')
@@ -106,9 +106,9 @@ print("CSM (KShape):\t{}".format(csm_ks))
 
 """
 Processing BasicMotions
-Rand Score (TGMRF + Multi-density):     0.9397435897435897
-NMI (TGMRF + Multi-density):    0.8743668583727371
-CSM (TGMRF + Multi-density):    0.6666666666666666
+Rand Score (TGMRF + Multi-density):     0.926923076923077
+NMI (TGMRF + Multi-density):    0.8459560681736559
+CSM (TGMRF + Multi-density):    0.7266666666666666
 
 Rand Score (TGMRF + Pure DBSCAN):       0.9128205128205128
 NMI (TGMRF + Pure DBSCAN):      0.8106609225064382
