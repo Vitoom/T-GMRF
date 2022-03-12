@@ -32,7 +32,7 @@ dump_file = "./dump/C_trans_dump.pkl"
 if not os.path.exists(dump_file):
 
     # Combining train and test data to extract T-GMRF features
-    clf = TGMRF(width=50, stride=25, lamb=6e-3, beta=5e-3)
+    clf = TGMRF(width=40, stride=20, lamb=1e-3, beta=1e-2)
     C_trans, C_trans_train, C_trans_test = clf.fit(X_train, X_test)
 
     output = open(dump_file, 'wb')
@@ -59,7 +59,7 @@ print("CSM (TGMRF + Multi-density):\t{}\n".format(csm_md))
 
 # Pure DBSCAN
 distance = pairwise_distances(C_trans, metric="l1")
-_eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 10)
+_eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 9)
 clustering = DBSCAN(eps=_eps, min_samples=3, metric="l1")
 
 clustering_db = clustering.fit_predict(C_trans)
@@ -106,16 +106,16 @@ print("CSM (KShape):\t{}".format(csm_ks))
 
 """
 Processing BasicMotions
-Rand Score (TGMRF + Multi-density):     0.926923076923077
-NMI (TGMRF + Multi-density):    0.8459560681736559
-CSM (TGMRF + Multi-density):    0.7266666666666666
+Rand Score (TGMRF + Multi-density):     0.8730769230769231
+NMI (TGMRF + Multi-density):    0.8376977478123274
+CSM (TGMRF + Multi-density):    0.656578947368421
 
-Rand Score (TGMRF + Pure DBSCAN):       0.9128205128205128
-NMI (TGMRF + Pure DBSCAN):      0.8106609225064382
-CSM (TGMRF + Pure DBSCAN):      0.4813186813186813
+Rand Score (TGMRF + Pure DBSCAN):       0.8730769230769231
+NMI (TGMRF + Pure DBSCAN):      0.819131141422677
+CSM (TGMRF + Pure DBSCAN):      0.6272727272727273
 
-Rand Score (TGMRF + KMeans):    0.8512820512820513
-NMI (TGMRF + KMeans):   0.8151106242780366
+Rand Score (TGMRF + KMeans):    0.8602564102564103
+NMI (TGMRF + KMeans):   0.8293595724997522
 CSM (TGMRF + KMeans):   0.625
 
 Rand Score (KShape):    0.808974358974359
