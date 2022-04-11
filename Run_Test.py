@@ -32,7 +32,7 @@ dump_file = "./dump/C_trans_dump.pkl"
 if not os.path.exists(dump_file):
 
     # Combining train and test data to extract T-GMRF features
-    clf = TGMRF(width=40, stride=20, lamb=1e-3, beta=1e-2)
+    clf = TGMRF(width=50, stride=25, lamb=1e-2, beta=1e-2)
     C_trans, C_trans_train, C_trans_test = clf.fit(X_train, X_test)
 
     output = open(dump_file, 'wb')
