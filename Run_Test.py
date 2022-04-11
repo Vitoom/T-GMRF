@@ -106,16 +106,16 @@ print("CSM (KShape):\t{}".format(csm_ks))
 
 """
 Processing BasicMotions
-Rand Score (TGMRF + Multi-density):     0.8730769230769231
-NMI (TGMRF + Multi-density):    0.8376977478123274
-CSM (TGMRF + Multi-density):    0.656578947368421
+Rand Score (TGMRF + Multi-density):     0.9397435897435897
+NMI (TGMRF + Multi-density):    0.8743668583727371
+CSM (TGMRF + Multi-density):    0.6666666666666666
 
-Rand Score (TGMRF + Pure DBSCAN):       0.8730769230769231
-NMI (TGMRF + Pure DBSCAN):      0.819131141422677
-CSM (TGMRF + Pure DBSCAN):      0.6272727272727273
+Rand Score (TGMRF + Pure DBSCAN):       0.8871794871794871
+NMI (TGMRF + Pure DBSCAN):      0.758675943912883
+CSM (TGMRF + Pure DBSCAN):      0.5282051282051282
 
-Rand Score (TGMRF + KMeans):    0.8602564102564103
-NMI (TGMRF + KMeans):   0.8293595724997522
+Rand Score (TGMRF + KMeans):    0.8512820512820513
+NMI (TGMRF + KMeans):   0.8151106242780366
 CSM (TGMRF + KMeans):   0.625
 
 Rand Score (KShape):    0.808974358974359
