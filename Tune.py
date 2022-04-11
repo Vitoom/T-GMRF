@@ -28,8 +28,12 @@ import os
 from TGMRF import TGMRF
 from MD_Cluster import MD_Cluster
 from Measures.measures import rand_score
+from sklearn.model_selection import train_test_split
 
 def Tuning_Hyperparametes(X, Y, dataset_name):
+
+    shrink = 0.01
+    _, X, _, Y = train_test_split(X, Y, test_size = shrink)
 
     log_folder = "./result/" + dataset_name + "/config_performance.txt"
     directory = os.path.dirname(log_folder)

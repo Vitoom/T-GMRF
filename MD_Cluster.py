@@ -111,7 +111,9 @@ class MD_Cluster:
         
         true_radiuses_index.append(int((start + radiuses_index[-1])/2))
 
-        true_radiuses_index = true_radiuses_index[1:]
+        true_radiuses_index = np.array(true_radiuses_index)
+        
+        true_radiuses_index = true_radiuses_index[[k_dis[ele] > 0.15 for ele in true_radiuses_index]]
 
         radiuses_value = [k_dis[i] for i in true_radiuses_index]
         plot_radiuses_index = [len(k_dis) - i for i in true_radiuses_index]
