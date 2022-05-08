@@ -1,6 +1,6 @@
 # T-GMRF
 
-This repo open the source code for "Time-varying Gaussian Markov Random Fields Learning for Multivariate Time Series Clustering".
+This repo open the sources code for "Time-varying Gaussian Markov Random Fields Learning for Multivariate Time Series Clustering".
 
 ## Using T-GMRF
 
