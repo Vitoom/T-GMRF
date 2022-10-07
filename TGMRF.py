@@ -10,6 +10,8 @@ from tqdm import tqdm
 from sklearn import preprocessing
 from Solver.TGMRF_solver import TGMRF_solver
 from time import time
+import os
+import pickle as pkl
 
 class TGMRF:
     """
@@ -18,7 +20,7 @@ class TGMRF:
     Parameters
     ----------
     """
-    def __init__(self, epsilon=50, width=10, stride=1, maxIters=30, lr=0, lamb=1e-2, beta=1e-2, measure="euclidean", verbose=True):
+    def __init__(self, epsilon=50, width=10, stride=1, maxIters=30, lr=0, lamb=1e-2, beta=1e-2, measure="euclidean", verbose=True, verbose_ADMM=False,dimension_reduce=True,dataset_name="Test",use_dump=False):
         self.epsilon = epsilon
         self.width = width
         self.stride = stride
@@ -29,6 +31,11 @@ class TGMRF:
         self.beta = beta
         self.verbose = verbose
         self.project_matrix = None
+        self.initilizing = False
+        self.verbose_ADMM = verbose_ADMM
+        self.dimension_reduce = dimension_reduce
+        self.dataset_name = dataset_name
+        self.use_dump = use_dump
         
     def triangle_l_2_matrix_l(self, l):
         n = int((-1  + np.sqrt(1+ 8*l))/2)
@@ -68,7 +75,7 @@ class TGMRF:
         cov_matrix_len = int(l_features * (l_features + 1) / 2)
 
         clf = TGMRF_solver(width=self.width, stride=self.stride, 
-                  maxIters=self.maxIters, lr=self.lr, lamb=self.lamb, beta=self.beta)
+                  maxIters=self.maxIters, lr=self.lr, lamb=self.lamb, beta=self.beta, initilizing=self.initilizing, verbose_ADMM=self.verbose_ADMM)
         
         aggregated_ll_Loss = 0
         aggregated_penalty_loss = 0
@@ -111,20 +118,33 @@ class TGMRF:
         self.C = np.zeros((int(l_features * (l_features + 1)  * s_windows / 2),  n_samples))
         cov_matrix_len = int(l_features * (l_features + 1) / 2)
 
+        duration, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters = 0, 0, 0, 0
+
         start = time()
 
-        clf = TGMRF_solver(width=self.width, stride=self.stride, 
-                  maxIters=self.maxIters, lr=self.lr, lamb=self.lamb, beta=self.beta)
-        
-        aggregated_ll_Loss = 0
-        aggregated_penalty_loss = 0
+        dump_file = f"./dump/{self.dataset_name}/T_GMRF_{self.dataset_name}_dump.pkl"
 
-        for i in tqdm(range(n_samples), ascii=True, desc="TGMRF"):
-            ics, loss, ll_loss, penalty_loss, numberOfParameters = clf.fit(X[i].T)
-            aggregated_ll_Loss += ll_loss
-            aggregated_penalty_loss += penalty_loss
-            for j in range(s_windows):
-                self.C[j * cov_matrix_len: (j + 1) * cov_matrix_len, i] = ics[j]
+        if not os.path.exists(dump_file) or not self.use_dump:
+
+            clf = TGMRF_solver(width=self.width, stride=self.stride, 
+                    maxIters=self.maxIters, lr=self.lr, lamb=self.lamb, beta=self.beta, verbose_ADMM=self.verbose_ADMM)
+            
+            aggregated_ll_Loss = 0
+            aggregated_penalty_loss = 0
+
+            for i in tqdm(range(n_samples), ascii=True, desc="TGMRF"):
+                ics, loss, ll_loss, penalty_loss, numberOfParameters = clf.fit(X[i].T)
+                aggregated_ll_Loss += ll_loss
+                aggregated_penalty_loss += penalty_loss
+                for j in range(s_windows):
+                    self.C[j * cov_matrix_len: (j + 1) * cov_matrix_len, i] = ics[j]
+            
+            if self.use_dump:
+                output = open(dump_file, 'wb')
+                pkl.dump(self.C, output)
+        else:
+            output = open(dump_file, 'rb')
+            self.C = pkl.load(output)
         
         duration = time() - start
         
@@ -141,25 +161,28 @@ class TGMRF:
         # keep original feature
         # C_normalize = self.C
         
-        # Covariance of C
-        Sigma_c = np.cov(C_normalize)
-        
-        # Run SVD algorithm onto covariance matrix of C
-        u, s, vh = np.linalg.svd(Sigma_c, full_matrices=True)
-        
-        # According to the energy content threshold, select the first k eigenvectors
-        totally_variance = sum(s)
-        k = len(s)
-        for i in range(len(s), 0, -1):
-            if sum(s[:i])/totally_variance*100 < self.epsilon:
-                k = i + 1
-                break
-        
-        # Projecting the features
-        C_trans = np.dot(C_normalize.T, u[:, :k])
+        if self.dimension_reduce:
+            # Covariance of C
+            Sigma_c = np.cov(C_normalize)
+            
+            # Run SVD algorithm onto covariance matrix of C
+            u, s, vh = np.linalg.svd(Sigma_c, full_matrices=True)
+            
+            # According to the energy content threshold, select the first k eigenvectors
+            totally_variance = sum(s)
+            k = len(s)
+            for i in range(len(s), 0, -1):
+                if sum(s[:i])/totally_variance*100 < self.epsilon:
+                    k = i + 1
+                    break
+            
+            # Projecting the features
+            C_trans = np.dot(C_normalize.T, u[:, :k])
 
-        # dump the projecting matrix
-        self.project_matrix = u[:, :k]
+            # dump the projecting matrix
+            self.project_matrix = u[:, :k]
+        else:
+            C_trans = C_normalize
         
         return C_trans, duration, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters
 

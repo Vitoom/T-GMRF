@@ -6,7 +6,7 @@ Created on Fri Aug 27 23:32:32 2021
 """
 
 import numpy as np
-from snap import *
+from snap import GenRndGnm, PNGraph
 import pickle as pkl
 import pandas as pd
 from sklearn.model_selection import train_test_split

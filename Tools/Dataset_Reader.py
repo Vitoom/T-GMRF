@@ -12,7 +12,9 @@ from sklearn import preprocessing
 import pickle as pkl
 import os
 from sklearn.model_selection import train_test_split
-
+from .HAR_Generate import HAR_Generate
+from .DSA_Generate import DSA_Generate
+from .EEG_Generate import EEG_Generate
 
 def read_from_arff(path):
     
@@ -39,17 +41,68 @@ def ArffDataset_Generate(dataset_name):
 
     print("Current Directory: \t", os.getcwd()) 
 
-    root_path = './Datasets'
+    root_path = './Datasets/Multivariate_arff'
         
     select_dataset = dataset_name
     
-    print("Processing {0}".format(select_dataset))
+    # save or load datastruct for time-saving --- dataset
+    dump_file = "./dump/" + dataset_name + "/dataset_split.pkl"
+    if not os.path.exists(dump_file):
+        dataset_train_path = '{0}/{1}/{1}_TRAIN.arff'.format(root_path, select_dataset)
+        dataset_test_path = '{0}/{1}/{1}_TEST.arff'.format(root_path, select_dataset)
+        
+        X_train, Y_train = read_from_arff(dataset_train_path)
+        X_test, Y_test = read_from_arff(dataset_test_path)
+
+        X = np.concatenate((X_train,X_test), axis=0)
+        Y = np.concatenate((Y_train,Y_test), axis=0)
+
+        # shrink dataset for debug through stratified sampling
+        if False:
+            _, X, _, Y = train_test_split(X, Y, test_size = 1/10, stratify=Y) # 1/10
+
+        num_instance = X.shape[0]
+
+        # scaling X
+        if False:
+            features = X.shape[1]
+            lengths = X.shape[2]
+            for i in range(num_instance):
+                for j in range(features):
+                    m = min(X[i, j, :])
+                    M = max(X[i, j, :])
+                    if M - m != 0:
+                        X[i, j, :] = (X[i, j, :] - m) / (M - m)
+                    else:
+                        X[i, j, :] = X[i, j, :] - m
+        
+        X_train, X_test, Y_train,  Y_test = train_test_split(X, Y, test_size = 1/2, stratify=Y)
     
-    dataset_train_path = '{0}/{1}/{1}_TRAIN.arff'.format(root_path, select_dataset)
-    dataset_test_path = '{0}/{1}/{1}_TEST.arff'.format(root_path, select_dataset)
-    
-    X_train, Y_train = read_from_arff(dataset_train_path)
-    X_test, Y_test = read_from_arff(dataset_test_path)
+        output = open(dump_file, 'wb')
+        pkl.dump((X_train, X_test, Y_train,  Y_test), output)
+    else:
+        output = open(dump_file, 'rb')
+        X_train, X_test, Y_train,  Y_test = pkl.load(output)
+    output.close()
     
     return X_train, Y_train, X_test, Y_test
 
+def Get_Dataset(dataset_name):
+    print("Starting to get dataset: {0}".format(dataset_name), flush=True)
+
+    dump_file = "./dump/" + dataset_name + "/dataset.pkl"
+    directory = os.path.dirname(dump_file)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    X_train, Y_train, X_test, Y_test = None, None, None, None
+    if dataset_name == "HAR":
+        X_train, Y_train, X_test, Y_test = HAR_Generate()
+    elif dataset_name == "DSA":
+        X_train, Y_train, X_test, Y_test = DSA_Generate()
+    elif dataset_name == "EEG":
+        X_train, Y_train, X_test, Y_test = EEG_Generate()
+    else:
+        X_train, Y_train, X_test, Y_test = ArffDataset_Generate(dataset_name)
+
+    return X_train, Y_train, X_test, Y_test

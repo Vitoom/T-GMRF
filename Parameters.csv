@@ -1,0 +1,3 @@
+,width,stride,lamb,beta,diff_threshold,slope_threshold,maxIters,dimension_reduce,CumulativeEnergySaving,k_nearest,k_dis_low,k_dis_high
+BasicMotions,25,10,1e-1,1e-1,0.03,0.06,30,True,80,8,2.5,3
+HAR,32,32,1e-1,1e-1,0.1,0.5,150,True,10,10,1e-5,1e12

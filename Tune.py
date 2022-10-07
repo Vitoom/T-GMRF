@@ -27,7 +27,7 @@ import os
 
 from TGMRF import TGMRF
 from MD_Cluster import MD_Cluster
-from Measures.measures import rand_score
+from Measures.RI import rand_score
 from sklearn.model_selection import train_test_split
 
 def Tuning_Hyperparametes(X, Y, dataset_name):

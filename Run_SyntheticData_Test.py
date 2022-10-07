@@ -13,7 +13,7 @@ from sklearn.cluster import DBSCAN, KMeans
 from Tools.generate_synthetic_data_tool import Fake_Dataset
 from TGMRF import TGMRF
 from MD_Cluster import MD_Cluster
-from Measures.measures import rand_score
+from Measures.RI import rand_score
 from sklearn.metrics import pairwise_distances
 
 dataset_name = "Fake_192_300_4" # "Fake_30_30_4"

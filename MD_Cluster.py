@@ -41,18 +41,21 @@ class MD_Cluster:
     Parameters
     ----------
     """
-    def __init__(self, diff_threshold=0.0015, slope_threshold=0.015):
+    def __init__(self, diff_threshold=0.0015, slope_threshold=0.015,k=10,k_dis_low=1e-12,k_dis_high=1e12):
         self.diff_threshold = diff_threshold
         self.slope_threshold = slope_threshold
-        self.k = 10
-        self.select_portion = 0.25
+        self.k = k
+        self.select_portion = 0.3 # 0.25
         self.cluster_bag = []
         self.radiuses = None
         self.C_trans_dump = None
         self.cluster_result_dump = None
+        self.k_dis_low = k_dis_low
+        self.k_dis_high = k_dis_high
 
     def Infection_Point(self, dis_list, i, j):
         stack = []
+        
         radiuses_index = []
         history = []
         stack.append((i, j))
@@ -77,7 +80,8 @@ class MD_Cluster:
                     r = k
                 history.append((r, _left, _right, diff))
                 #print(r, "\t", left_slope, "\t", right_slope, "\t", diff)
-            if abs(diff) < self.diff_threshold and abs(left_slope) < self.slope_threshold and abs(right_slope) < self.slope_threshold:
+            if abs(diff) < self.diff_threshold and abs(_left) < self.slope_threshold and abs(_right) < self.slope_threshold:
+                print(r, "left slope:\t", _left, "right slope:\t", _right, "slope diff:\t", diff)
                 radiuses_index.append(r)
             stack.append((left, r-1))
             stack.append((r+1, right))
@@ -104,24 +108,30 @@ class MD_Cluster:
         true_radiuses_index = []
         start = radiuses_index[0]
         true_radiuses_index.append(start)
+        error_shift = 0
         for i in range(len(error_list)):
-            if error_list[i] > _eps:
-                true_radiuses_index.append(int(start + (radiuses_index[i] - start) * 0.8))
+            error_shift = error_shift + error_list[i]
+            if error_shift > _eps:
+                if len(k_dis) < 100:
+                    true_radiuses_index.append(int(start + (radiuses_index[i+1] - start) * 0.76))
+                else:
+                    true_radiuses_index.append(int(start + (radiuses_index[i+1] - start) * 0.8))
+                error_shift = 0
                 start = radiuses_index[i+1]
-        
-        true_radiuses_index.append(int((start + radiuses_index[-1])/2))
+
+        # true_radiuses_index.append(int((start + radiuses_index[-1])/2))
 
         true_radiuses_index = np.array(true_radiuses_index)
         
-        true_radiuses_index = true_radiuses_index[[k_dis[ele] > 0.1 for ele in true_radiuses_index]]
-
+        true_radiuses_index = true_radiuses_index[[k_dis[ele] > self.k_dis_low and k_dis[ele] < self.k_dis_high for ele in true_radiuses_index]]
+        
         radiuses_value = [k_dis[i] for i in true_radiuses_index]
         plot_radiuses_index = [len(k_dis) - i for i in true_radiuses_index]
 
         plt.plot(k_dis[:len(k_dis)][::-1], linewidth=6)
         plt.plot(plot_radiuses_index, radiuses_value, 'r^', markersize=12)
 
-        eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 9) # 9 for BasicMotions
+        eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 8) # 8 for BasicMotions
         plt.axhline(y=eps, color='y', linestyle='-')
         fig = plt.gcf()
         fig.savefig('MDDBSCAN_density.pdf', format='pdf', bbox_inches='tight')
@@ -161,7 +171,8 @@ class MD_Cluster:
 
             select_index = select_index[remain]
             C_trans_iter = C_trans_iter[remain]
-
+            if len(C_trans_iter) < 1:
+                break
             stride += 100
 
         clustering_result = pd.Series(clustering_assign).astype('category').cat.codes
