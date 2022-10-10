@@ -24,7 +24,8 @@ class TGMRF_solver:
                  schedule = 'R',
                  epsilon = 1e-8,
                  initilizing = False,
-                 verbose_ADMM = False):
+                 verbose_ADMM = False,
+                 maxIters_ADMM=1000):
         self.width = width
         self.stride = stride
         self.maxIters = maxIters
@@ -38,6 +39,7 @@ class TGMRF_solver:
         self.num_proc = 4
         self.verbose_ADMM = verbose_ADMM
         self.loss_shrink = 1
+        self.maxIters_ADMM = maxIters_ADMM
         
     def upper2Full(self, a):
         n = int((-1  + np.sqrt(1+ 8*a.shape[0]))/2)  
@@ -127,7 +129,7 @@ class TGMRF_solver:
                     _beta = np.zeros((self.variables_dim, self.variables_dim)) + self.beta
                     solver = ADMMSolver(self.ic_sequence, i, _lamb, _beta, self.variables_dim, self.windows_dim, 1,
                                         self.upper2Full(self.c_sequence[i]), verbose=self.verbose_ADMM,c_sequence=self.c_sequence)
-                    self.ic_sequence[i] = solver.__call__(1000, 1e-6, 1e-6, False) # 1000
+                    self.ic_sequence[i] = solver.__call__(self.maxIters_ADMM, 1e-6, 1e-6, False) # 1000
                     # optRes[i] = solver.__call__(1000, 1e-6, 1e-6, False) # pool.apply_async(solver, (1000, 1e-6, 1e-6, False,))
                     # self.ic_sequence[i] = optRes[i]
                     k += 1

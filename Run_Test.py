@@ -20,16 +20,19 @@ from MD_Cluster import MD_Cluster
 from Measures.RI import rand_score
 
 from Tools.Dataset_Reader import Get_Dataset
+from Tools.Root_Path import Root_Path
 from sklearn.metrics import normalized_mutual_info_score, adjusted_rand_score
 from tslearn.preprocessing import TimeSeriesScalerMeanVariance
 
 from sklearn.metrics import pairwise_distances
 
+from Plot_Embedding import Plot_Embedding
+
 dataset_name = "HAR"
 
 print("Processing {0}".format(dataset_name))
 
-os.chdir("/home/wading/Git/T-GMRF-Dogfood")
+os.chdir(Root_Path)
 
 parameters = pd.read_csv('./Parameters.csv', sep=',', index_col=0)
 
@@ -49,7 +52,7 @@ dump_file = f"./dump/C_trans_dump_{dataset_name}.pkl"
 if not os.path.exists(dump_file):
 
     # Combining train and test data to extract T-GMRF features
-    clf = TGMRF(width=parameter["width"].astype(int), stride=parameter["stride"].astype(int), lamb=parameter["lamb"], beta=parameter["beta"], maxIters=int(parameter["maxIters"]), verbose_ADMM=False,dimension_reduce=parameter["dimension_reduce"].astype(bool), epsilon=parameter["CumulativeEnergySaving"].astype(int),dataset_name=dataset_name,use_dump=True)
+    clf = TGMRF(width=parameter["width"].astype(int), stride=parameter["stride"].astype(int), lamb=parameter["lamb"], beta=parameter["beta"], maxIters=int(parameter["maxIters"]), verbose_ADMM=False,dimension_reduce=parameter["dimension_reduce"].astype(bool), epsilon=parameter["CumulativeEnergySaving"].astype(int),dataset_name=dataset_name,use_dump=True,maxIters_ADMM=parameter["maxIters_ADMM"].astype(int))
     C_trans, C_trans_train, C_trans_test = clf.fit(X_train, X_test)
 
     output = open(dump_file, 'wb')
@@ -65,6 +68,7 @@ clustering = MD_Cluster(diff_threshold=parameter["diff_threshold"], slope_thresh
 clustering.fit(C_trans)
 
 clustering_predict = clustering.predict(C_trans_test)
+_clustring_predict = clustering.predict(C_trans)
 
 ri_md = rand_score(clustering_predict, Y_test)
 nmi_md = normalized_mutual_info_score(clustering_predict, Y_test)
@@ -74,7 +78,7 @@ print("NMI (TGMRF + Multi-density):\t{}".format(nmi_md))
 
 # Pure DBSCAN
 distance = pairwise_distances(C_trans, metric="l1")
-_eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 8)
+_eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 9) # 8 for BasicMotions
 clustering = DBSCAN(eps=_eps, min_samples=3, metric="l1")
 
 clustering_db = clustering.fit_predict(C_trans)
@@ -89,6 +93,7 @@ print("NMI (TGMRF + Pure DBSCAN):\t{}".format(nmi_db))
 kmeans = KMeans(n_clusters=len(set(Y_test)), random_state=5)
 kmeans.fit(C_trans)
 clustering_kmeans =  kmeans.predict(C_trans_test)
+_clustring_kmeans = kmeans.predict(C_trans)
 
 ri_kmeans = rand_score(clustering_kmeans, Y_test)
 nmi_kmeans = normalized_mutual_info_score(clustering_kmeans, Y_test)
@@ -97,6 +102,7 @@ print("Rand Score (TGMRF + KMeans):\t{}".format(ri_kmeans))
 print("NMI (TGMRF + KMeans):\t{}".format(nmi_kmeans))
 
 # K-Shape
+"""
 X = np.concatenate((X_train, X_test), axis=0)
 _X = X.transpose(0, 2, 1)
 _X = TimeSeriesScalerMeanVariance(mu=0., std=1.).fit_transform(_X)
@@ -111,6 +117,11 @@ nmi_ks = normalized_mutual_info_score(clustering_ks, Y_test)
 
 print("Rand Score (KShape):\t{}".format(ri_ks))
 print("NMI (KShape):\t{}".format(nmi_ks))
+"""
+
+Plot_Embedding(distance, len(Y_train), np.concatenate((Y_train, Y_test)), _clustring_kmeans, clustering_db, _clustring_predict)
+
+
 
 
 

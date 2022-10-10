@@ -20,7 +20,7 @@ class TGMRF:
     Parameters
     ----------
     """
-    def __init__(self, epsilon=50, width=10, stride=1, maxIters=30, lr=0, lamb=1e-2, beta=1e-2, measure="euclidean", verbose=True, verbose_ADMM=False,dimension_reduce=True,dataset_name="Test",use_dump=False):
+    def __init__(self, epsilon=50, width=10, stride=1, maxIters=30, lr=0, lamb=1e-2, beta=1e-2, measure="euclidean", verbose=True, verbose_ADMM=False,dimension_reduce=True,dataset_name="Test",use_dump=False,maxIters_ADMM=1000):
         self.epsilon = epsilon
         self.width = width
         self.stride = stride
@@ -36,6 +36,7 @@ class TGMRF:
         self.dimension_reduce = dimension_reduce
         self.dataset_name = dataset_name
         self.use_dump = use_dump
+        self.maxIters_ADMM = maxIters_ADMM
         
     def triangle_l_2_matrix_l(self, l):
         n = int((-1  + np.sqrt(1+ 8*l))/2)
@@ -75,7 +76,7 @@ class TGMRF:
         cov_matrix_len = int(l_features * (l_features + 1) / 2)
 
         clf = TGMRF_solver(width=self.width, stride=self.stride, 
-                  maxIters=self.maxIters, lr=self.lr, lamb=self.lamb, beta=self.beta, initilizing=self.initilizing, verbose_ADMM=self.verbose_ADMM)
+                  maxIters=self.maxIters, lr=self.lr, lamb=self.lamb, beta=self.beta, initilizing=self.initilizing, verbose_ADMM=self.verbose_ADMM,maxIters_ADMM=self.maxIters_ADMM)
         
         aggregated_ll_Loss = 0
         aggregated_penalty_loss = 0

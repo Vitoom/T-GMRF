@@ -9,10 +9,9 @@ Datasets/*
 Datasets/Multivariate_arff/*
 !Datasets/Multivariate_arff/BasicMotions/
 
-# Only retain EEG and BasicMotions for time saving
+# Only retain BasicMotions for time saving
 !dump/
 dump/*
-!dump/EEG/
 !dump/BasicMotions/
 dump/BasicMotions/*
 !dump/BasicMotions/dataset_split.pkl

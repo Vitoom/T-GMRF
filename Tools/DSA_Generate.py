@@ -52,7 +52,7 @@ def DSA_Generate():
     if not os.path.exists(dump_file):
         # shrink dataset for debug through stratified sampling
         if True:
-            _, X, _, Y = train_test_split(X, Y, test_size = 1/10, stratify=Y) # 1/10
+            _, X, _, Y = train_test_split(X, Y, test_size = 1/20, stratify=Y) # 1/10
 
         num_instance = X.shape[0]
 
@@ -69,7 +69,7 @@ def DSA_Generate():
                     else:
                         X[i, j, :] = X[i, j, :] - m
 
-        X_train, X_test, Y_train,  Y_test = train_test_split(X, Y, test_size = 2/10, stratify=Y)
+        X_train, X_test, Y_train,  Y_test = train_test_split(X, Y, test_size = 1/2, stratify=Y)
 
         output = open(dump_file, 'wb')
         pkl.dump((X_train, X_test, Y_train,  Y_test), output)
