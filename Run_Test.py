@@ -102,7 +102,6 @@ print("Rand Score (TGMRF + KMeans):\t{}".format(ri_kmeans))
 print("NMI (TGMRF + KMeans):\t{}".format(nmi_kmeans))
 
 # K-Shape
-"""
 X = np.concatenate((X_train, X_test), axis=0)
 _X = X.transpose(0, 2, 1)
 _X = TimeSeriesScalerMeanVariance(mu=0., std=1.).fit_transform(_X)
@@ -117,7 +116,6 @@ nmi_ks = normalized_mutual_info_score(clustering_ks, Y_test)
 
 print("Rand Score (KShape):\t{}".format(ri_ks))
 print("NMI (KShape):\t{}".format(nmi_ks))
-"""
 
 Plot_Embedding(distance, len(Y_train), np.concatenate((Y_train, Y_test)), _clustring_kmeans, clustering_db, _clustring_predict)
 
