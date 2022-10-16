@@ -127,8 +127,13 @@ class TGMRF:
 
         if not os.path.exists(dump_file) or not self.use_dump:
 
+            if self.dataset_name in ['EEG']:
+                initilizing = True
+            else:
+                initilizing = False
+
             clf = TGMRF_solver(width=self.width, stride=self.stride, 
-                    maxIters=self.maxIters, lr=self.lr, lamb=self.lamb, beta=self.beta, verbose_ADMM=self.verbose_ADMM)
+                    maxIters=self.maxIters, lr=self.lr, lamb=self.lamb, beta=self.beta, verbose_ADMM=self.verbose_ADMM,initilizing=initilizing)
             
             aggregated_ll_Loss = 0
             aggregated_penalty_loss = 0
@@ -163,11 +168,23 @@ class TGMRF:
         # C_normalize = self.C
         
         if self.dimension_reduce:
-            # Covariance of C
-            Sigma_c = np.cov(C_normalize)
             
-            # Run SVD algorithm onto covariance matrix of C
-            u, s, vh = np.linalg.svd(Sigma_c, full_matrices=True)
+            reduce_dump = f"./dump/{self.dataset_name}/Reduce_{self.dataset_name}_dump.pkl"
+            use_reduce_dump = False
+            if not os.path.exists(reduce_dump) or not use_reduce_dump:
+
+                # Covariance of C
+                Sigma_c = np.cov(C_normalize)
+                
+                # Run SVD algorithm onto covariance matrix of C
+                u, s, vh = np.linalg.svd(Sigma_c, full_matrices=True)
+
+                if use_reduce_dump:
+                    reduce = open(reduce_dump, 'wb')
+                    pkl.dump((Sigma_c, u, s, vh), reduce)
+            else:
+                reduce = open(reduce_dump, 'rb')
+                Sigma_c, u, s, vh = pkl.load(reduce)
             
             # According to the energy content threshold, select the first k eigenvectors
             totally_variance = sum(s)

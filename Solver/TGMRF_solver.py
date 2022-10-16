@@ -6,6 +6,7 @@ Created on Fri Dec 13 21:03:57 2019
 @author: vito
 """
 
+from warnings import catch_warnings
 import numpy as np
 import math
 import sys
@@ -98,7 +99,7 @@ class TGMRF_solver:
         Parameters:
             - X: the data of multivariate time series
         """
-        assert self.maxIters > 0 # must have at least one literation
+        # assert self.maxIters > 0 # must have at least one literation
         
         l_lengths = X.shape[0]
         self.variables_dim = X.shape[1]
@@ -111,11 +112,16 @@ class TGMRF_solver:
             _cov = np.cov(X[self.stride * i: self.stride * i + self.width, :].T)
             self.c_sequence[i, :] = _cov[np.triu_indices(self.variables_dim)] # unbaised covariance matrix
             if self.initilizing:
-                self.ic_sequence[i, :] = np.linalg.inv(_cov)[np.triu_indices(self.variables_dim)]
+                try:
+                    self.ic_sequence[i, :] = np.linalg.inv(_cov)[np.triu_indices(self.variables_dim)]
+                except:
+                    self.ic_sequence[i, :] = np.linalg.inv(_cov+np.diag(np.full(_cov.shape[0],1e-12)))[np.triu_indices(self.variables_dim)]
             del _cov
             
         # pool = Pool(processes=self.num_proc)  # multi-threading
         
+        loss, ll_loss, penalty_loss, numberOfParameters = 0, 0, 0, 0
+
         _loss =  0
         _ll_loss = 0
         _penalty_loss = 0

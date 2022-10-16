@@ -78,7 +78,7 @@ print("NMI (TGMRF + Multi-density):\t{}".format(nmi_md))
 
 # Pure DBSCAN
 distance = pairwise_distances(C_trans, metric="l1")
-_eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 9) # 8 for BasicMotions
+_eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 8)
 clustering = DBSCAN(eps=_eps, min_samples=3, metric="l1")
 
 clustering_db = clustering.fit_predict(C_trans)

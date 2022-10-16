@@ -151,6 +151,8 @@ class MD_Cluster:
 
         self.radiuses = true_radiuses
 
+        # print("Radiuses:", true_radiuses)
+
         clustering_assign = np.full(C_trans.shape[0], -1)
 
         C_trans_iter = C_trans.copy()
