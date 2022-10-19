@@ -112,10 +112,7 @@ class MD_Cluster:
         for i in range(len(error_list)):
             error_shift = error_shift + error_list[i]
             if error_shift > _eps:
-                if len(k_dis) < 100:
-                    true_radiuses_index.append(int(start + (radiuses_index[i+1] - start) * 0.76))
-                else:
-                    true_radiuses_index.append(int(start + (radiuses_index[i+1] - start) * 0.8))
+                true_radiuses_index.append(int(start + (radiuses_index[i+1] - start) * 0.8))
                 error_shift = 0
                 start = radiuses_index[i+1]
 

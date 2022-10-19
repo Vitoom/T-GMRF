@@ -1,6 +1,7 @@
 ,width,stride,lamb,beta,diff_threshold,slope_threshold,maxIters,dimension_reduce,CumulativeEnergySaving,k_nearest,k_dis_low,k_dis_high,maxIters_ADMM
-BasicMotions,25,10,1e-1,1e-1,0.03,0.06,30,True,80,8,2.5,3,1000
+BasicMotions,25,10,1e-1,1e-1,0.002,0.05,30,True,80,4,1e-12,1e12,1000
 HAR,32,32,1e-1,1e-1,0.1,0.5,150,True,10,10,1e-5,1e12,1000
 DSA,25,25,1e-1,1e-1,0.06,0.09,30,True,80,10,1e-12,1e12,500
 EEG,32,16,0,0,0.065,0.1,0,True,80,10,1e-12,1e12,0
 ArticularyWordRecognition,36,36,1e-1,1e-1,0.1,0.5,150,True,80,10,1e-12,1e12,1000
+AtrialFibrillation,60,40,5e-2,1e-1,0.25,0.5,150,True,80,5,1e-12,1e12,1000
