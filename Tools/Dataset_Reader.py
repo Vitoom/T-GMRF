@@ -54,6 +54,9 @@ def ArffDataset_Generate(dataset_name):
         X_train, Y_train = read_from_arff(dataset_train_path)
         X_test, Y_test = read_from_arff(dataset_test_path)
 
+        if select_dataset in ["Cricket", "Epilepsy"]:
+            return X_train, Y_train, X_test, Y_test
+
         X = np.concatenate((X_train,X_test), axis=0)
         Y = np.concatenate((Y_train,Y_test), axis=0)
 

@@ -123,21 +123,21 @@ class MD_Cluster:
         true_radiuses_index = true_radiuses_index[[k_dis[ele] > self.k_dis_low and k_dis[ele] < self.k_dis_high for ele in true_radiuses_index]]
         
         radiuses_value = [k_dis[i] for i in true_radiuses_index]
-        plot_radiuses_index = [len(k_dis) - i for i in true_radiuses_index]
 
-        plt.plot(k_dis[:len(k_dis)][::-1], linewidth=6)
-        plt.plot(plot_radiuses_index, radiuses_value, 'r^', markersize=12)
+        if True:
+            plot_radiuses_index = [len(k_dis) - i for i in true_radiuses_index]
 
-        eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 8) # 8 for BasicMotions
-        plt.axhline(y=eps, color='y', linestyle='-')
-        fig = plt.gcf()
-        fig.savefig('MDDBSCAN_density.pdf', format='pdf', bbox_inches='tight')
+            plt.plot(k_dis[:len(k_dis)][::-1], linewidth=6)
+            plt.plot(plot_radiuses_index, radiuses_value, 'r^', markersize=12)
+
+            eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 8) # 8 for BasicMotions
+            plt.axhline(y=eps, color='y', linestyle='-')
+            fig = plt.gcf()
+            fig.savefig('MDDBSCAN_density.pdf', format='pdf', bbox_inches='tight')
     
         return radiuses_value
 
     def fit_predict(self, C_trans):
-
-        n_samples = C_trans.shape[0]
 
         # Compute similarity distance matrix
         distance = pairwise_distances(C_trans, metric="l1")
@@ -194,9 +194,3 @@ class MD_Cluster:
         clustering_result = [self.cluster_result_dump[i] for i in index]
 
         return np.array(clustering_result)
-
-
-
-
-
-

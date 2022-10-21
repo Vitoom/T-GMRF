@@ -118,10 +118,3 @@ print("Rand Score (KShape):\t{}".format(ri_ks))
 print("NMI (KShape):\t{}".format(nmi_ks))
 
 Plot_Embedding(distance, len(Y_train), np.concatenate((Y_train, Y_test)), _clustring_kmeans, clustering_db, _clustring_predict)
-
-
-
-
-
-
-

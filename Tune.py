@@ -6,123 +6,119 @@ Created on Wed Jan  8 19:06:09 2020
 @author: vito
 """
 
+import os
 import numpy as np
-
-from sklearn.cluster import DBSCAN
-from hdbscan.hdbscan_ import HDBSCAN
+import pandas as pd
+import math
 from ray import tune
 
-try:  # SciPy >= 0.19
-    from scipy.special import comb
-except ImportError:
-    from scipy.misc import comb  # noqa
-from sklearn.metrics import normalized_mutual_info_score, adjusted_rand_score
-
-from sklearn.decomposition import PCA
-from sklearn.metrics import silhouette_score
-import math
-
-import numpy as np
-import os
+from sklearn.cluster import DBSCAN, KMeans
+from sklearn.metrics import normalized_mutual_info_score, silhouette_score, pairwise_distances
 
 from TGMRF import TGMRF
 from MD_Cluster import MD_Cluster
 from Measures.RI import rand_score
-from sklearn.model_selection import train_test_split
+from Tools.Dataset_Reader import Get_Dataset
+from Tools.Root_Path import Root_Path
 
-def Tuning_Hyperparametes(X, Y, dataset_name):
+os.chdir(Root_Path)
 
-    shrink = 0.01
-    _, X, _, Y = train_test_split(X, Y, test_size = shrink)
+def Tuning_Hyperparametes(dataset_name):
 
-    log_folder = "./result/" + dataset_name + "/config_performance.txt"
+    X, Y, _, _ = Get_Dataset(dataset_name)
+
+    log_folder = Root_Path + "/result/" + dataset_name + "/config_performance.txt"
     directory = os.path.dirname(log_folder)
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    def train_TGMRF(config):
-        # if config["width"] < config["stride"]:
-        #     return
-        clf = TGMRF(epsilon=55, width=32, stride=8, maxIters=30, lr=0, lamb=config["lamb"], beta=config["beta"])
-        icspca, icspca_row, last, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters = clf.fit_transform(X)
-        
-        
-        _eps = np.percentile(icspca.reshape(-1)[icspca.reshape(-1) != 0], 6)
-        clustering_dbscan = DBSCAN(eps=_eps, min_samples=3, metric="precomputed").fit(icspca)
-        clustering_hdbscan = HDBSCAN(min_cluster_size=3, metric='precomputed').fit_predict(icspca)
+    parameters = pd.read_csv(Root_Path + '/Parameters.csv', sep=',', index_col=0)
 
-        clustering_MD = MD_Cluster(diff_threshold=0.0015, slope_threshold=0.015)
+    parameters = parameters.astype({"width": int, "stride": int, "lamb": float, "beta": float, "diff_threshold": float, "slope_threshold": float})
+
+    parameter = parameters.loc[dataset_name]
+
+    def train_TGMRF(config):
+        if config["width"] < config["stride"]:
+            return
+        
+        clf = TGMRF(width=config["width"], stride=config["stride"], lamb=config["lamb"], beta=config["beta"], maxIters=int(parameter["maxIters"]), verbose_ADMM=False,dimension_reduce=parameter["dimension_reduce"].astype(bool), epsilon=config["CumulativeEnergySaving"],dataset_name=dataset_name)
+        icspca, _, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters = clf.fit_transform(X) 
+
+        distance = pairwise_distances(icspca, metric="l1")
+        _eps = np.percentile(distance.reshape(-1)[distance.reshape(-1) != 0], 9)
+        clustering_dbscan = DBSCAN(eps=_eps, min_samples=3, metric="precomputed").fit(distance)
+
+        clustering_MD = MD_Cluster(diff_threshold=parameter["diff_threshold"], slope_threshold=parameter["slope_threshold"], k=int(parameter["k_nearest"]), k_dis_low=parameter["k_dis_low"].astype(float), k_dis_high=parameter["k_dis_high"].astype(float))
         clustering_result_md = clustering_MD.fit_predict(icspca)
 
-        if icspca_row.shape[1] > 30:
-            pca = PCA(n_components=min(20, min(icspca_row.shape[0], icspca_row.shape[1])))
-            icspca_row = pca.fit_transform(icspca_row)
+        shrink = 0.15
+        bic = math.log(X.shape[0]) * numberOfParameters * shrink - 2 * math.log(aggregated_ll_Loss) # math.log(aggregated_ll_Loss + aggregated_penalty_loss)
+
+        silhouette_dbscan = silhouette_score(distance, clustering_dbscan.labels_, metric="precomputed")
+        silhouette_md = silhouette_score(distance, clustering_result_md, metric="precomputed")
 
         ri_dbscan = rand_score(clustering_dbscan.labels_, Y)
-        ri_hdbscan = rand_score(clustering_hdbscan, Y)
         ri_md = rand_score(clustering_result_md, Y)
-        ari_dbscan = adjusted_rand_score(clustering_dbscan.labels_, Y)
-        ari_hdbscan = adjusted_rand_score(clustering_hdbscan, Y)
-        ari_md = adjusted_rand_score(clustering_result_md, Y)
-        # csm_dbscan = cluster_similarity_measure(clustering_dbscan.labels_, Y, "dataset")
-        # csm_hdbscan  = cluster_similarity_measure(clustering_hdbscan, Y, "dataset")
-        nmi_dbscan = normalized_mutual_info_score(clustering_dbscan.labels_, Y, average_method="max")
-        nmi_hdbscan = normalized_mutual_info_score(clustering_hdbscan, Y, average_method="max")
-        nmi_md = normalized_mutual_info_score(clustering_result_md, Y, average_method="max")
 
-        shrink = 1.0
-        bic = math.log(X.shape[0]) * numberOfParameters * shrink - 2 * math.log(aggregated_ll_Loss + aggregated_penalty_loss)
+        nmi_dbscan = normalized_mutual_info_score(clustering_dbscan.labels_, Y)
+        nmi_md = normalized_mutual_info_score(clustering_result_md, Y)
 
-        if len(clustering_hdbscan) == 1:
-            clustering_hdbscan[0] = 20
-        silhouette_hdbscan = silhouette_score(icspca, clustering_hdbscan, metric="precomputed")
-        if len(clustering_MD) == 1:
-            clustering_MD[0] = 20
-        silhouette_md = silhouette_score(icspca, clustering_result_md, metric="precomputed")
+        kmeans = KMeans(n_clusters=len(set(Y)), random_state=5)
+        kmeans.fit(icspca)
+        clustering_kmeans =  kmeans.predict(icspca)
 
+        ri_kmeans = rand_score(clustering_kmeans, Y)
+        nmi_kmeans = normalized_mutual_info_score(clustering_kmeans, Y)
+        silhouette_kmeans = silhouette_score(distance, clustering_kmeans, metric="precomputed")
 
-        tune.report(NMI_DBSCAN=nmi_dbscan, NMI_HDBSCAN=nmi_hdbscan, NMI_MD=nmi_md,
-                    RI_DBSCAN=ri_hdbscan, RI_HDBSCAN=ri_hdbscan, RI_MD=ri_md,
-                    BIC = bic, Silhouette_hdbscan=silhouette_hdbscan, Silhouette_md=silhouette_md)
+        tune.report(NMI_DBSCAN=nmi_dbscan, RI_DBSCAN=ri_dbscan, NMI_MD=nmi_md, RI_MD=ri_md,
+                    RI_KMEANS=ri_kmeans, NMI_KMEANS=nmi_kmeans, BIC=bic, 
+                    Silhouette_dbscan=silhouette_dbscan, Silhouette_md=silhouette_md,
+                    Silhouette_kmeans=silhouette_kmeans)
 
         with open(log_folder, "a+") as f:
-            print("{}_{}".format(config["lamb"], config["beta"]), file=f)
-            print("{}\t{}\t{}".format(ri_dbscan, ari_dbscan, nmi_dbscan), file=f)
-            print("{}\t{}\t{}".format(ri_hdbscan, ari_hdbscan, nmi_hdbscan), file=f)
-            print("{}\t{}\t{}".format(ri_md, ari_md, nmi_md), file=f)
+            print("{}_{}_{}_{}_{}".format(config["width"], config["stride"], config["CumulativeEnergySaving"], config["lamb"], config["beta"]), file=f)
+            print("{}\t{}".format(ri_dbscan, nmi_dbscan), file=f)
+            print("{}\t{}".format(ri_md, nmi_md), file=f)
+            print("{}\t{}".format(ri_kmeans, nmi_kmeans), file=f)
             print("{}\t{}\t{}\t{}\t{}".format(bic, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters, X.shape[0]), file=f)
-            print("{}\t{}".format(silhouette_hdbscan, silhouette_md), file=f)
-
-    """
-    Simple test:
-
-    _config = {
-        "width" : 64,
-        "stride" : 32,
-        "lamb" : 5e-3,
-        "beta" : 1e-2
-    }
-
-    train_TGMRF(_config)
-    """
+            print("{}\t{}\t{}".format(silhouette_dbscan, silhouette_md, silhouette_kmeans), file=f)
 
     with open(log_folder, "a+") as f:
-        print("\n lamb_beta \n", file=f)
-
-    analysis = tune.run(
-        train_TGMRF,
-        config={
-                "lamb": tune.grid_search([i*0.01 for i in range(0, 13)]),
-                "beta": tune.grid_search([i*0.01 for i in range(0, 13)])
-                })
-
-    result_folder = "./result/" + dataset_name + "/best_config.txt"
+        print("#" * 100, file=f)
     
+    analysis = tune.run(
+    train_TGMRF,
+    config={
+            "width": tune.grid_search([25, 30, 50, 60, 80, 103]), 
+            "stride": tune.grid_search([25, 30, 50, 60, 80, 103]),
+            "lamb": tune.grid_search([1e-1, 1e-2, 5e-2]),
+            "beta": tune.grid_search([1e-1, 1e-2, 5e-2]),
+            "CumulativeEnergySaving": tune.grid_search([10, 30, 50])
+            })
+
+    result_folder = Root_Path + "/result/" + dataset_name + "/best_config.txt"
 
     with open(result_folder, "a+") as f:
-        print("Best config of HDBSCAN (TGMRF): ", analysis.get_best_config(metric="RI_HDBSCAN", mode="max"), file=f)
+        print("Best config of BIC (TGMRF): ", analysis.get_best_config(metric="BIC", mode="min"), file=f)
 
-    print("Best config of HDBSCAN (TGMRF): ", analysis.get_best_config(metric="RI_HDBSCAN", mode="max"))
+    print("Best config of BIC (TGMRF): ", analysis.get_best_config(metric="BIC", mode="min"))
+
+    with open(result_folder, "a+") as f:
+        print("Best config of Silhouette_dbscan (TGMRF): ", analysis.get_best_config(metric="Silhouette_dbscan", mode="max"), file=f)
+
+    print("Best config of Silhouette_dbscan (TGMRF): ", analysis.get_best_config(metric="Silhouette_dbscan", mode="max"))
+
+    with open(result_folder, "a+") as f:
+        print("Best config of Silhouette_md (TGMRF): ", analysis.get_best_config(metric="Silhouette_md", mode="max"), file=f)
+
+    print("Best config of Silhouette_md (TGMRF): ", analysis.get_best_config(metric="Silhouette_md", mode="max"))
+
+    with open(result_folder, "a+") as f:
+        print("Best config of Silhouette_kmeans (TGMRF): ", analysis.get_best_config(metric="Silhouette_kmeans", mode="max"), file=f)
+
+    print("Best config of Silhouette_kmeans (TGMRF): ", analysis.get_best_config(metric="Silhouette_kmeans", mode="max"))
 
     with open(result_folder, "a+") as f:
         print("Best config of DBSCAN (TGMRF): ", analysis.get_best_config(metric="RI_DBSCAN", mode="max"), file=f)
@@ -135,20 +131,12 @@ def Tuning_Hyperparametes(X, Y, dataset_name):
     print("Best config of Multi-Density (TGMRF): ", analysis.get_best_config(metric="RI_MD", mode="max"))
 
     with open(result_folder, "a+") as f:
-        print("Best config of BIC (TGMRF): ", analysis.get_best_config(metric="BIC", mode="min"), file=f)
+        print("Best config of K-Means (TGMRF): ", analysis.get_best_config(metric="RI_KMEANS", mode="max"), file=f)
 
-    print("Best config of BIC (TGMRF): ", analysis.get_best_config(metric="BIC", mode="min"))
-
-    with open(result_folder, "a+") as f:
-        print("Best config of Silhouette_hdbscan (TGMRF): ", analysis.get_best_config(metric="Silhouette_hdbscan", mode="max"), file=f)
-
-    print("Best config of Silhouette_hdbscan (TGMRF): ", analysis.get_best_config(metric="Silhouette_hdbscan", mode="max"))
-
-    with open(result_folder, "a+") as f:
-        print("Best config of Silhouette_md (TGMRF): ", analysis.get_best_config(metric="Silhouette_md", mode="max"), file=f)
-
-    print("Best config of Silhouette_md (TGMRF): ", analysis.get_best_config(metric="Silhouette_md", mode="max"))
+    print("Best config of K-Means (TGMRF): ", analysis.get_best_config(metric="RI_KMEANS", mode="max"))
 
     # Get a dataframe for analyzing trial results.
     df = analysis.dataframe()
-    df.to_csv("./result/" + dataset_name + "/parameter_search.csv")
+    df.to_csv(Root_Path + "/result/" + dataset_name + "/parameter_search.csv")
+
+Tuning_Hyperparametes("HAR")
