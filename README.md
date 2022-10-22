@@ -20,14 +20,14 @@ It has several hyperparameters as follows:
 
 ## Example
 
-1. Install depedency pakcages.
-```bash
-pip install sklearn, snap, tslearn, tqdm, hdbscan, pyreadr, 'ray[tune]'
-```
-
-2. Clone the code to local.
+1. Clone the code to local.
 ```bash
 git clone https://github.com/Vitoom/T-GMRF.git
+```
+
+2. Install depedency pakcages.
+```bash
+pip install sklearn, snap, tslearn, tqdm, hdbscan, pyreadr, 'ray[tune]'
 ```
 
 3. Run quick test of T-GMRF on a small dataset, BasicMotions, opened from [UEA Repo](http://www.timeseriesclassification.com/dataset.php).
