@@ -14,6 +14,7 @@ from ray import tune
 
 from sklearn.cluster import DBSCAN, KMeans
 from sklearn.metrics import normalized_mutual_info_score, silhouette_score, pairwise_distances
+from sklearn.model_selection import train_test_split
 
 from TGMRF import TGMRF
 from MD_Cluster import MD_Cluster
@@ -23,15 +24,15 @@ from Tools.Root_Path import Root_Path
 
 os.chdir(Root_Path)
 
-def Tuning_Hyperparametes(dataset_name):
-
+def Tuning_Hyperparametes(dataset_name, shrink):
     X, Y, _, _ = Get_Dataset(dataset_name)
+    _, X, _, Y = train_test_split(X, Y, test_size = shrink)
 
     log_folder = Root_Path + "/result/" + dataset_name + "/config_performance.txt"
     directory = os.path.dirname(log_folder)
     if not os.path.exists(directory):
         os.makedirs(directory)
-
+    
     parameters = pd.read_csv(Root_Path + '/Parameters.csv', sep=',', index_col=0)
 
     parameters = parameters.astype({"width": int, "stride": int, "lamb": float, "beta": float, "diff_threshold": float, "slope_threshold": float})
@@ -52,8 +53,8 @@ def Tuning_Hyperparametes(dataset_name):
         clustering_MD = MD_Cluster(diff_threshold=parameter["diff_threshold"], slope_threshold=parameter["slope_threshold"], k=int(parameter["k_nearest"]), k_dis_low=parameter["k_dis_low"].astype(float), k_dis_high=parameter["k_dis_high"].astype(float))
         clustering_result_md = clustering_MD.fit_predict(icspca)
 
-        shrink = 0.15
-        bic = math.log(X.shape[0]) * numberOfParameters * shrink - 2 * math.log(aggregated_ll_Loss) # math.log(aggregated_ll_Loss + aggregated_penalty_loss)
+        balance = 0.15
+        bic = math.log(X.shape[0]) * numberOfParameters * balance - 2 * math.log(aggregated_ll_Loss) # math.log(aggregated_ll_Loss + aggregated_penalty_loss)
 
         silhouette_dbscan = silhouette_score(distance, clustering_dbscan.labels_, metric="precomputed")
         silhouette_md = silhouette_score(distance, clustering_result_md, metric="precomputed")
@@ -139,4 +140,4 @@ def Tuning_Hyperparametes(dataset_name):
     df = analysis.dataframe()
     df.to_csv(Root_Path + "/result/" + dataset_name + "/parameter_search.csv")
 
-Tuning_Hyperparametes("HAR")
+Tuning_Hyperparametes("HAR", 0.1)

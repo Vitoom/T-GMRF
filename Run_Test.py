@@ -28,7 +28,7 @@ from sklearn.metrics import pairwise_distances
 
 from Plot_Embedding import Plot_Embedding
 
-dataset_name = "HAR"
+dataset_name = "BasicMotions"
 
 print("Processing {0}".format(dataset_name))
 
@@ -73,6 +73,7 @@ _clustring_predict = clustering.predict(C_trans)
 ri_md = rand_score(clustering_predict, Y_test)
 nmi_md = normalized_mutual_info_score(clustering_predict, Y_test)
 
+print("\n####### The result #######")
 print("Rand Score (TGMRF + Multi-density):\t{}".format(ri_md))
 print("NMI (TGMRF + Multi-density):\t{}".format(nmi_md))
 

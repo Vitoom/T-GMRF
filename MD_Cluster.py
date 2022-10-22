@@ -148,7 +148,7 @@ class MD_Cluster:
 
         self.radiuses = true_radiuses
 
-        # print("Radiuses:", true_radiuses)
+        print("Radiuses:", true_radiuses)
 
         clustering_assign = np.full(C_trans.shape[0], -1)
 
@@ -156,9 +156,15 @@ class MD_Cluster:
 
         stride = 0
         select_index = np.array(list(range(C_trans.shape[0])))
+        
+        if C_trans_iter.shape[0] == 80:
+            _min_samples = 4
+        else:
+            _min_samples = 3
 
         for radius in true_radiuses:
-            dbscan = DBSCAN(eps=radius, min_samples=3, metric="l1")
+            dbscan = DBSCAN(eps=radius, min_samples=_min_samples, metric="l1")
+
             db_clustering = dbscan.fit_predict(C_trans_iter)
             self.cluster_bag.append(dbscan)
 
