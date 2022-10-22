@@ -20,7 +20,7 @@ It has several hyperparameters as follows:
 
 ## Example
 
-1. Clone the code to local.
+1. Clone the code locally.
 ```bash
 git clone https://github.com/Vitoom/T-GMRF.git
 ```
