@@ -1,4 +1,4 @@
-# Dataset Specification
+# Datasets Specification
 Due to Github space limitation, the original dataset files haven't been uploaded except for BasicMotions. Please downloaded the files and put them here.
 + **Multivariate_arff** refer to http://www.timeseriesclassification.com/Downloads/Archives/Multivariate2018_arff.zip
 
