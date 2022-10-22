@@ -5,3 +5,5 @@ Due to Github space limitation, the original dataset files haven't been uploaded
 + **HAR** refer to https://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
 
 + **DSA** refer to https://archive.ics.uci.edu/ml/datasets/Daily+and+Sports+Activities#
+
++ **EEG** refer to https://archive.ics.uci.edu/ml/datasets/EEG+Database
