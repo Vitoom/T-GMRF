@@ -1,20 +1,7 @@
 # Ignore Multivariate_arff dataset due to large volumn (Github prohibited)
-# Multivariate_arff refer to http://www.timeseriesclassification.com/Downloads/Archives/Multivariate2018_arff.zip
-# HAR refer to https://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
-# DSA refer to https://archive.ics.uci.edu/ml/datasets/Daily+and+Sports+Activities#
-# EEG refer to https://archive.ics.uci.edu/ml/datasets/EEG+Database
 !Datasets/
 Datasets/*
+!Datasets/Datasets.md
 !Datasets/Multivariate_arff/
 Datasets/Multivariate_arff/*
 !Datasets/Multivariate_arff/BasicMotions/
-
-# Only retain EEG and BasicMotions for time saving
-#!dump/
-#dump/*
-#!dump/EEG/
-#!dump/BasicMotions/
-#dump/BasicMotions/*
-#!dump/BasicMotions/dataset_split.pkl
-#!dump/C_trans_dump_BasicMotions.pkl
-dump/EEG/Reduce_EEG_dump.pkl
