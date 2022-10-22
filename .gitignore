@@ -5,3 +5,5 @@ Datasets/*
 !Datasets/Multivariate_arff/
 Datasets/Multivariate_arff/*
 !Datasets/Multivariate_arff/BasicMotions/
+
+__pycache__/
