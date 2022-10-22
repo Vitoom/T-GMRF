@@ -5,7 +5,6 @@ Created on Sat Aug 21 11:00:02 2021
 @author: Vito
 """
 
-Root_Path = "/home/wading/Git/T-GMRF-Dogfood"
+from pathlib import Path
 
-# /home/dwx/Git/T-GMRF-Dogfood
-# /home/wading/Git/T-GMRF-Dogfood
+Root_Path = str(Path(__file__).parent.parent.absolute())
