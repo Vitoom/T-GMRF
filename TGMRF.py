@@ -8,6 +8,7 @@ Created on Wed Jan  1 22:14:30 2020
 import numpy as np
 from tqdm import tqdm
 from sklearn import preprocessing
+from sklearn.decomposition import PCA
 from Solver.TGMRF_solver import TGMRF_solver
 from time import time
 import os
@@ -127,7 +128,7 @@ class TGMRF:
 
         if not os.path.exists(dump_file) or not self.use_dump:
 
-            if self.dataset_name in ['EEG']:
+            if self.dataset_name in ['EEG', "DuckDuckGeese"]:
                 initilizing = True
             else:
                 initilizing = False
@@ -169,36 +170,40 @@ class TGMRF:
         
         if self.dimension_reduce:
             
-            reduce_dump = f"./dump/{self.dataset_name}/Reduce_{self.dataset_name}_dump.pkl"
-            use_reduce_dump = False
-            if not os.path.exists(reduce_dump) or not use_reduce_dump:
+            try:
+                reduce_dump = f"./dump/{self.dataset_name}/Reduce_{self.dataset_name}_dump.pkl"
+                use_reduce_dump = False
+                if not os.path.exists(reduce_dump) or not use_reduce_dump:
 
-                # Covariance of C
-                Sigma_c = np.cov(C_normalize)
+                    # Covariance of C
+                    Sigma_c = np.cov(C_normalize)
+                    
+                    # Run SVD algorithm onto covariance matrix of C
+                    u, s, vh = np.linalg.svd(Sigma_c, full_matrices=True)
+
+                    if use_reduce_dump:
+                        reduce = open(reduce_dump, 'wb')
+                        pkl.dump((Sigma_c, u, s, vh), reduce)
+                else:
+                    reduce = open(reduce_dump, 'rb')
+                    Sigma_c, u, s, vh = pkl.load(reduce)
                 
-                # Run SVD algorithm onto covariance matrix of C
-                u, s, vh = np.linalg.svd(Sigma_c, full_matrices=True)
+                # According to the energy content threshold, select the first k eigenvectors
+                totally_variance = sum(s)
+                k = len(s)
+                for i in range(len(s), 0, -1):
+                    if sum(s[:i])/totally_variance*100 < self.epsilon:
+                        k = i + 1
+                        break
+                
+                # Projecting the features
+                C_trans = np.dot(C_normalize.T, u[:, :k])
 
-                if use_reduce_dump:
-                    reduce = open(reduce_dump, 'wb')
-                    pkl.dump((Sigma_c, u, s, vh), reduce)
-            else:
-                reduce = open(reduce_dump, 'rb')
-                Sigma_c, u, s, vh = pkl.load(reduce)
-            
-            # According to the energy content threshold, select the first k eigenvectors
-            totally_variance = sum(s)
-            k = len(s)
-            for i in range(len(s), 0, -1):
-                if sum(s[:i])/totally_variance*100 < self.epsilon:
-                    k = i + 1
-                    break
-            
-            # Projecting the features
-            C_trans = np.dot(C_normalize.T, u[:, :k])
-
-            # dump the projecting matrix
-            self.project_matrix = u[:, :k]
+                # dump the projecting matrix
+                self.project_matrix = u[:, :k]
+            except:
+                pca = PCA(n_components=8) # DuckDuckGeese:8
+                C_trans = pca.fit_transform(C_normalize.T)
         else:
             C_trans = C_normalize
         

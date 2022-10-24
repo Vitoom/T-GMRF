@@ -54,7 +54,7 @@ def ArffDataset_Generate(dataset_name):
         X_train, Y_train = read_from_arff(dataset_train_path)
         X_test, Y_test = read_from_arff(dataset_test_path)
 
-        if select_dataset in ["Cricket", "Epilepsy"]:
+        if select_dataset in ["BasicMotions", "Cricket", "Epilepsy", "JapaneseVowels", "DuckDuckGeese", "EigenWorms", "ERing", "EthanolConcentration", "FingerMovements"]:
             return X_train, Y_train, X_test, Y_test
 
         X = np.concatenate((X_train,X_test), axis=0)
@@ -90,6 +90,13 @@ def ArffDataset_Generate(dataset_name):
     
     return X_train, Y_train, X_test, Y_test
 
+def Fill_na(X):
+    for i in range(X.shape[0]):
+        _X = pd.DataFrame(X[i].T).copy()
+        if _X.isna().sum().sum() > 0:
+            X[i] = _X.fillna(method="ffill").fillna(method="bfill").values.T
+    return X
+
 def Get_Dataset(dataset_name):
     print("Starting to get dataset: {0}".format(dataset_name), flush=True)
 
@@ -107,5 +114,7 @@ def Get_Dataset(dataset_name):
         X_train, Y_train, X_test, Y_test = EEG_Generate()
     else:
         X_train, Y_train, X_test, Y_test = ArffDataset_Generate(dataset_name)
+
+    X_train, X_test = Fill_na(X_train), Fill_na(X_test)
 
     return X_train, Y_train, X_test, Y_test
