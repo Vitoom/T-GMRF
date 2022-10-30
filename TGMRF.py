@@ -128,7 +128,7 @@ class TGMRF:
 
         if not os.path.exists(dump_file) or not self.use_dump:
 
-            if self.dataset_name in ['EEG', "DuckDuckGeese"]:
+            if self.dataset_name in ['EEG', "DuckDuckGeese", "FingerMovements"]:
                 initilizing = True
             else:
                 initilizing = False
@@ -205,7 +205,7 @@ class TGMRF:
                 pca = PCA(n_components=8) # DuckDuckGeese:8
                 C_trans = pca.fit_transform(C_normalize.T)
         else:
-            C_trans = C_normalize
+            C_trans = C_normalize.T
         
         return C_trans, duration, aggregated_ll_Loss, aggregated_penalty_loss, numberOfParameters
 

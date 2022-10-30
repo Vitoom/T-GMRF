@@ -96,10 +96,3 @@ def Plot_Embedding(distance, train_length, real_lables, k_means_labels, db_label
     fig.set_size_inches(6, 5)
     fig.savefig("Emedding_For_Algos.pdf", format='pdf', bbox_inches='tight')
     plt.close()
-    
-    
-    
-    
-    
-    
-    

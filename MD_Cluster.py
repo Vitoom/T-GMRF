@@ -157,7 +157,7 @@ class MD_Cluster:
         stride = 0
         select_index = np.array(list(range(C_trans.shape[0])))
         
-        if C_trans_iter.shape[0] == 80:
+        if C_trans_iter.shape[0] in [80]:
             _min_samples = 4
         else:
             _min_samples = 3
